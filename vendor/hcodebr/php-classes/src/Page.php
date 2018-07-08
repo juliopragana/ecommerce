@@ -6,15 +6,17 @@ use Rain\Tpl;
 class Page {
 
 	private $tpl;
-	private $opitions = [];
+	private $options = [];
 	private $defaults = [
+		"header"=>true,
+		"footer"=>true,	
 		"data"=>[]
 	];
 
 	//método para o header
 	public function __construct($opts = array(), $tpl_dir = "/views/"){
 
-		$this->opitions = array_merge($this->defaults, $opts);
+		$this->options = array_merge($this->defaults, $opts);
 
 		$config = array(
 					"tpl_dir"       => $_SERVER["DOCUMENT_ROOT"].$tpl_dir,
@@ -26,9 +28,9 @@ class Page {
 
 		$this->tpl = new Tpl;
 
-		$this->setData($this->opitions["data"]);
+		$this->setData($this->options["data"]);
 
-		$this->tpl->draw("header");
+		if ($this->options["header"] === true) $this->tpl->draw("header");
 
 	}
 
@@ -52,7 +54,9 @@ class Page {
 
 	//método para o footer
 	public function __destruct(){
-		$this->tpl->draw("footer");
+
+		if($this->options["footer"] === true) $this->tpl->draw("footer");
+
 	}
 
 }
