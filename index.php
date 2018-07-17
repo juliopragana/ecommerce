@@ -7,6 +7,7 @@ use \Slim\Slim;
 use \Hcode\Page;
 use \Hcode\PageAdmin;
 use \Hcode\Model\User;
+use \Hcode\Model\Category;
 
 $app = new Slim();
 
@@ -184,6 +185,7 @@ $app->post("/admin/forgot", function(){
 
 });
 
+//acendo a tela de envio de onde coloca o e-mail para o reset
 $app->get("/admin/forgot/sent", function(){
 
     $page = new PageAdmin([
@@ -194,6 +196,8 @@ $app->get("/admin/forgot/sent", function(){
     $page->setTpl("forgot-sent");
 });
 
+
+//acendo  a tela onde colocar a nova senha
 $app->get("/admin/forgot/reset", function(){
 
     $user = User::validForgotDecrypt($_GET["code"]);
@@ -210,6 +214,7 @@ $app->get("/admin/forgot/reset", function(){
 
 });
 
+//acendo o método que faz o reste da senha
 $app->post("/admin/forgot/reset", function(){
 
     $forgot = User::validForgotDecrypt($_POST["code"]);
@@ -234,6 +239,103 @@ $app->post("/admin/forgot/reset", function(){
 
     $page->setTpl("forgot-reset-success");
 });
+
+//acessanndo a tela das categorias.
+$app->get("/admin/categories", function(){
+    User::verifyLogin();
+
+    $categories = Category::listAll();
+
+    $page = new PageAdmin();
+
+    $page->setTpl("categories", array(
+        "categories"=>$categories
+    ));
+
+});
+
+//acessando a cadastrar categoria.
+$app->get("/admin/categories/create", function(){
+   
+    User::verifyLogin();
+
+    $page = new PageAdmin();
+
+    $page->setTpl("categories-create");
+
+});
+//fazendo o cadastro de categoria
+$app->post("/admin/categories/create", function(){
+
+    User::verifyLogin();
+
+    $category = new Category();
+
+    $category->setData($_POST);
+
+    $category->save();
+
+    header("Location: /admin/categories");
+    exit;
+
+});
+
+//rota pra deletar
+$app->get("/admin/categories/:idcategory/delete", function($idcategory){
+       
+       User::verifyLogin();
+
+        //instancia o objeto
+        $category = new Category(); 
+        //carrega o idcategory caso ainda tenha no banco
+        $category->get((int)$idcategory);
+
+        $category->delete();
+
+        header("Location: /admin/categories");
+        exit;
+
+});
+
+//rota get de edição de categoria, envia pra tela de edição
+$app->get("/admin/categories/:idcategory", function($idcategory){
+        
+        User::verifyLogin();
+
+        //instancia o objeto
+        $page = new PageAdmin();
+
+        $category = new Category();
+
+        $category->get((int)$idcategory);
+
+        $page->setTpl("categories-update", array(
+        "category"=>$category->getValues()
+        ));  
+
+});
+
+//rota post que faz a atualização no banco da categoria
+$app->post("/admin/categories/:idcategory", function($idcategory){
+        
+        User::verifyLogin();
+
+        //instancia o objeto
+        $category = new Category();
+
+        $category->get((int)$idcategory);
+
+        $category->setData($_POST);
+
+        $category->save();
+
+        header("Location: /admin/categories");
+        exit;
+}); 
+
+
+
+
 
 $app->run();
 
